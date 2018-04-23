@@ -1,0 +1,8 @@
+# PyCharm idea folder
+.idea/
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# pyc files
+*.pyc
