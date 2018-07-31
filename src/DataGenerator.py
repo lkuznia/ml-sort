@@ -21,7 +21,7 @@ class DataGenerator(object):
     @staticmethod
     def binarize(x, max_pwr):
         bin_str = format(x, '0{}b'.format(max_pwr+1))
-        bin_vect = np.array([int(k) for k in bin_str[::-1]])
+        bin_vect = [int(k) for k in bin_str[::-1]]
         return bin_vect
 
     @staticmethod
@@ -38,8 +38,24 @@ class DataGenerator(object):
         if 'x' not in self.train_cases.keys():
             print('Please create X matrix for {} with the generate_x method')
         else:
-            vect_binarize = np.vectorize(DataGenerator.binarize, otypes=[np.ndarray])
-            self.train_cases['binary_x'] = vect_binarize(self.train_cases['x'], self.max_bin_magnitude)
+            # vect_binarize = np.vectorize(DataGenerator.binarize, signature='(m),()->(m,n)')#  otypes=[np.ndarray])
+            # self.train_cases['binary_x'] = np.ndarray(vect_binarize(self.train_cases['x'], self.max_bin_magnitude))
+            bin_train_data = []
+            for case in self.train_cases['x']:
+                case_list = []
+                for val in case:
+                    case_list.append(DataGenerator.binarize(val, self.max_bin_magnitude))
+                bin_train_data.append(case_list)
+            self.train_cases['binary_x'] = bin_train_data
+
+    def labelize_y(self):
+        if 'y' not in self.train_cases.keys():
+            print('Please create Y vector with the generate_y method')
+        else:
+            labels = []
+            for y in self.train_cases['y']:
+                labels.append(self.sort_orders[tuple(y)]['label'])
+            self.train_cases['label_y'] = labels
 
     def binarize_y(self):
         if 'y' not in self.train_cases.keys():
@@ -47,7 +63,7 @@ class DataGenerator(object):
         else:
             sorted_label = []
             for y in self.train_cases['y']:
-                sorted_label.append(self.sort_orders[tuple(y)])
+                sorted_label.append(self.sort_orders[tuple(y)]['binary'])
             self.train_cases['binary_y'] = sorted_label
 
     def generate_y(self):
@@ -56,6 +72,7 @@ class DataGenerator(object):
         else:
             self.train_cases['y'] = np.argsort(self.train_cases['x'])
             self.binarize_y()
+            self.labelize_y()
 
     def generate_case(self):
         self.generate_x(self.instances, self.length, self.max_val)
@@ -66,5 +83,5 @@ class DataGenerator(object):
         nb_sort_orders = factorial(length)
         sort_orders = defaultdict()
         for index, order in enumerate(list(permutations(range(length)))):
-            sort_orders[order] = DataGenerator.e_i(nb_sort_orders, index)
+            sort_orders[order] = {'binary': DataGenerator.e_i(nb_sort_orders, index), 'label': index}
         self.sort_orders = sort_orders

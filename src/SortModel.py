@@ -19,6 +19,7 @@ train_x = data.train_cases['x']
 train_y = data.train_cases['y']
 train_x_bin = data.train_cases['binary_x']
 train_y_bin = data.train_cases['binary_y']
+train_y_label = data.train_cases['label_y']
 
 X = tf.placeholder("float", [None, LIST_LEN])
 Y = tf.placeholder("float", [None, factorial(LIST_LEN)])
