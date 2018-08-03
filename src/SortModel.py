@@ -7,8 +7,8 @@ import numpy as np
 
 MAX_PWR = 5  # This is the maximum value the elements in the vector can take
 LIST_LEN = 3  # This is the length of the vector to be sorted
-NB_INSTANCES = 1000  # This is the number of training instances
-NB_HIDDEN = 1000  # number of hidden units
+NB_INSTANCES = 10000  # This is the number of training instances
+NB_HIDDEN = 100  # number of hidden units
 
 
 # We'll want to randomly initialize weights.
@@ -33,6 +33,7 @@ train_y_bin = data.train_cases['binary_y']
 train_y_label = data.train_cases['label_y']
 
 train_x = data.train_cases['flat_binary_x']
+train_y = data.train_cases['binary_y']
 X = tf.placeholder("float", shape=(None, len(train_x[0])))
 Y = tf.placeholder("float", shape=(None, factorial(LIST_LEN)))
 
@@ -47,28 +48,31 @@ py_x = model(X, w_h, w_o)
 predict_op = tf.argmax(py_x, 1)
 
 # We'll train our model by minimizing a cost function.
-cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(py_x, Y))
+cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=py_x, labels=Y))
 train_op = tf.train.GradientDescentOptimizer(0.05).minimize(cost)
 
-BATCH_SIZE = 10
+BATCH_SIZE = 100
 
 # Launch the graph in a session
 with tf.Session() as sess:
     tf.initialize_all_variables().run()
+    # tf.global_variables_initializer()
 
-    for epoch in range(100):
+    for epoch in range(10):
         # Shuffle the data before each training iteration.
-        p = np.random.permutation(range(len(train_x)))
-        train_x, train_y = train_x[p], train_y[p]
+        perm = np.random.permutation(range(len(train_x)))
+        e_train_x = [train_x[p] for p in perm]
+        e_train_y = [train_y[p] for p in perm]
+        # train_x, train_y = train_x[p], train_y[p]
 
         # Train in batches of 128 inputs.
-        for start in range(0, len(train_x), BATCH_SIZE):
+        for start in range(0, len(e_train_x), BATCH_SIZE):
             end = start + BATCH_SIZE
-            sess.run(train_op, feed_dict={X: train_x[start:end], Y: train_y[start:end]})
+            sess.run(train_op, feed_dict={X: e_train_x[start:end], Y: e_train_y[start:end]})
 
         # And print the current accuracy on the training data.
-        print(epoch, np.mean(np.argmax(train_y, axis=1) ==
-                             sess.run(predict_op, feed_dict={X: train_x, Y: train_y})))
+        print(epoch, np.mean(np.argmax(e_train_y, axis=1) ==
+                             sess.run(predict_op, feed_dict={X: e_train_x, Y: e_train_y})))
 
     # And now for some fizz buzz
     # numbers = np.arange(1, 101)
@@ -77,6 +81,15 @@ with tf.Session() as sess:
     # output = np.vectorize(fizz_buzz)(numbers, teY)
     #
     # print(output)
+    alist = [1, 2, 3]
+    bin_alist = [data.binarize(n, 6) for n in alist]
+    flat_alist = [[item for sublist in bin_alist for item in sublist]]
+    raw_y = sess.run(py_x, feed_dict={X:flat_alist})
+    test_y = sess.run(predict_op, feed_dict={X: flat_alist})
+    print("Raw Pred:", raw_y)
+    print("Sorted Order:", test_y)
+
+
 
 # with tf.name_scope('first_net'):
 #     hidden1 = fully_connected(X, nb_hidden1, scope="hidden1")
