@@ -20,7 +20,7 @@ class DataGenerator(object):
 
     @staticmethod
     def binarize(x, max_pwr):
-        bin_str = format(x, '0{}b'.format(max_pwr+1))
+        bin_str = format(x, '0{}b'.format(max_pwr))
         bin_vect = [int(k) for k in bin_str[::-1]]
         return bin_vect
 
@@ -41,12 +41,15 @@ class DataGenerator(object):
             # vect_binarize = np.vectorize(DataGenerator.binarize, signature='(m),()->(m,n)')#  otypes=[np.ndarray])
             # self.train_cases['binary_x'] = np.ndarray(vect_binarize(self.train_cases['x'], self.max_bin_magnitude))
             bin_train_data = []
+            flat_bin_train_data = []
             for case in self.train_cases['x']:
                 case_list = []
                 for val in case:
                     case_list.append(DataGenerator.binarize(val, self.max_bin_magnitude))
                 bin_train_data.append(case_list)
+                flat_bin_train_data.append([item for sublist in case_list for item in sublist])
             self.train_cases['binary_x'] = bin_train_data
+            self.train_cases['flat_binary_x'] = flat_bin_train_data
 
     def labelize_y(self):
         if 'y' not in self.train_cases.keys():
