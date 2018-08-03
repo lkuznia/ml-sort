@@ -58,7 +58,7 @@ with tf.Session() as sess:
     tf.initialize_all_variables().run()
     # tf.global_variables_initializer()
 
-    for epoch in range(10):
+    for epoch in range(100):
         # Shuffle the data before each training iteration.
         perm = np.random.permutation(range(len(train_x)))
         e_train_x = [train_x[p] for p in perm]
@@ -81,17 +81,15 @@ with tf.Session() as sess:
     # output = np.vectorize(fizz_buzz)(numbers, teY)
     #
     # print(output)
-    alist = [1, 2, 3]
+    alist = [3, 2, 1]
     bin_alist = [data.binarize(n, 6) for n in alist]
     flat_alist = [[item for sublist in bin_alist for item in sublist]]
     raw_y = sess.run(py_x, feed_dict={X:flat_alist})
     test_y = sess.run(predict_op, feed_dict={X: flat_alist})
     print("Raw Pred:", raw_y)
-    print("Sorted Order:", test_y)
+    print("Pred Sorted Order Label:", test_y)
+    for k in data.sort_orders:
+        if data.sort_orders[k]['label'] == test_y:
+            print("Pred Sorted Order:", k)
+            print("Act Sorted Order:", np.argsort(alist))
 
-
-
-# with tf.name_scope('first_net'):
-#     hidden1 = fully_connected(X, nb_hidden1, scope="hidden1")
-#     hidden2 = fully_connected(hidden1, nb_hidden2, scope="hidden2")
-#     logits = fully_connected(hidden2, )
